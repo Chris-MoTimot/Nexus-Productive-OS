@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full select-none overflow-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS OS - Personal Productivity Operating System</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* ==========================================================================
+           DESIGN SYSTEM & CSS VARIABLES
+           ========================================================================== */
+        :root {
+            --bg-primary: #090d16;
+            --bg-surface: rgba(18, 26, 43, 0.75);
+            --bg-surface-hover: rgba(30, 41, 67, 0.85);
+            --bg-glass: rgba(13, 20, 36, 0.65);
+            --bg-glass-card: rgba(255, 255, 255, 0.04);
+            
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --accent: #06b6d4; /* Neon Cyan */
+            --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            --accent-glow: rgba(6, 182, 212, 0.35);
+            --accent-purple: #a855f7;
+            
+            --border-color: rgba(255, 255, 255, 0.1);
+            --border-highlight: rgba(6, 182, 212, 0.4);
+            --shadow-window: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(6, 182, 212, 0.15);
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-full: 9999px;
+            
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        /* Light Theme Overrides */
+        body.theme-light {
+            --bg-primary: #e2e8f0;
+            --bg-surface: rgba(255, 255, 255, 0.85);
+            --bg-surface-hover: rgba(241, 245, 249, 0.95);
+            --bg-glass: rgba(255, 255, 255, 0.7);
+            --bg-glass-card: rgba(0, 0, 0, 0.03);
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            
+            --border-color: rgba(0, 0, 0, 0.1);
+            --border-highlight: rgba(6, 182, 212, 0.6);
+            --shadow-window: 0 20px 40px -15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Accent Color Theme Options */
+        body.accent-purple {
+            --accent: #a855f7;
+            --accent-gradient: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+            --accent-glow: rgba(168, 85, 247, 0.35);
+            --border-highlight: rgba(168, 85, 247, 0.5);
+        }
+
+        body.accent-emerald {
+            --accent: #10b981;
+            --accent-gradient: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+            --accent-glow: rgba(16, 185, 129, 0.35);
+            --border-highlight: rgba(16, 185, 129, 0.5);
+        }
+
+        /* ==========================================================================
+           BASE STYLES & UTILITIES
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: var(--bg-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+        }
+
+        .glass-card {
+            background: var(--bg-glass-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .glass-card:hover {
+            border-color: var(--border-highlight);
+            box-shadow: 0 4px 20px -5px var(--accent-glow);
+        }
+
+        /* Dynamic Wallpaper Background */
+        .wallpaper-container {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            background: radial-gradient(circle at 20% 20%, rgba(6, 182, 212, 0.15) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 45%),
+                        radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.8) 0%, var(--bg-primary) 100%);
+        }
+
+        .wallpaper-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.6;
+        }
+
+        /* ==========================================================================
+           WINDOW SYSTEM STYLING
+           ========================================================================== */
+        .nexus-window {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-surface);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-window);
+            min-width: 340px;
+            min-height: 240px;
+            overflow: hidden;
+            transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease, width 0.2s ease, height 0.2s ease, top 0.2s ease, left 0.2s ease;
+            transform-origin: center bottom;
+        }
+
+        .nexus-window.active {
+            border-color: var(--border-highlight);
+        }
+
+        .nexus-window.minimized {
+            opacity: 0;
+            transform: scale(0.7) translateY(100px);
+            pointer-events: none;
+        }
+
+        .nexus-window.maximized {
+            border-radius: 0 !important;
+            border: none !important;
+        }
+
+        .window-titlebar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 42px;
+            padding: 0 14px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+            cursor: move;
+        }
+
+        .window-control-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .window-control-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-primary);
+        }
+
+        .window-control-btn.close:hover {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        /* Snap Preview Overlay */
+        .snap-preview {
+            position: fixed;
+            background: var(--accent-glow);
+            border: 2px solid var(--accent);
+            border-radius: var(--radius-md);
+            z-index: 9998;
+            pointer-events: none;
+            transition: all 0.15s ease;
+            opacity: 0;
+        }
+        .snap-preview.visible {
+            opacity: 1;
+        }
+
+        /* Taskbar Animations */
+        .start-menu-panel {
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+            transform-origin: bottom left;
+        }
+        .start-menu-panel.hidden-menu {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+            pointer-events: none;
+        }
+
+        .notification-panel {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .notification-panel.closed {
+            transform: translateX(100%);
+        }
+
+        /* Active indicator for taskbar items */
+        .taskbar-item.active-app::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            width: 16px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 10px;
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        /* Keyframe Animations */
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+
+        .animate-pulse-glow {
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="h-full w-full overflow-hidden text-slate-100 dark" id="nexus-body">
+
+    <!-- Wallpaper Layer -->
+    <div class="wallpaper-container">
+        <div class="wallpaper-grid"></div>
+        <div class="absolute -top-32 -left-32 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse-glow"></div>
+        <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse-glow" style="animation-delay: 1.5s;"></div>
+    </div>
+
+    <!-- Snap Layout Visual Feedback Overlay -->
+    <div id="snap-preview" class="snap-preview"></div>
+
+    <!-- MAIN DESKTOP WORKSPACE -->
+    <div id="desktop-workspace" class="relative z-10 h-[calc(100vh-56px)] w-full p-6 flex flex-col flex-wrap gap-6 items-start content-start">
+        <!-- Desktop Icons generated by JS -->
+    </div>
+
+    <!-- WINDOW CONTAINER AREA -->
+    <div id="window-container" class="absolute inset-0 z-20 pointer-events-none overflow-hidden pb-14">
+        <!-- Dynamic Windows appended here -->
+    </div>
+
+    <!-- TASKBAR (FIXED BOTTOM) -->
+    <div id="taskbar" class="fixed bottom-0 left-0 right-0 h-14 z-50 glass-panel flex items-center justify-between px-4 border-t border-white/10 select-none">
+        <!-- Left Section: Start Button & Quick Actions -->
+        <div class="flex items-center space-x-3">
+            <button id="start-btn" class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20 hover:scale-105 active:scale-95 transition-all duration-200">
+                <i class="fa-solid fa-atom text-xl"></i>
+            </button>
+            <button id="search-trigger-btn" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-all text-xs">
+                <i class="fa-solid fa-magnifying-glass text-cyan-400"></i>
+                <span class="hidden sm:inline">Search (Ctrl + K)</span>
+            </button>
+        </div>
+
+        <!-- Center Section: Running Applications Pins -->
+        <div id="taskbar-apps" class="flex items-center space-x-2 h-full">
+            <!-- Dynamic taskbar items added by JS -->
+        </div>
+
+        <!-- Right Section: System Tray & Clock -->
+        <div class="flex items-center space-x-4">
+            <div class="hidden sm:flex items-center space-x-3 text-xs text-slate-300">
+                <span class="hover:text-cyan-400 cursor-pointer transition-colors"><i class="fa-solid fa-wifi text-cyan-400"></i></span>
+                <span class="hover:text-cyan-400 cursor-pointer transition-colors"><i class="fa-solid fa-battery-three-quarters text-emerald-400"></i></span>
+            </div>
+            
+            <button id="notification-btn" class="relative p-2 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors">
+                <i class="fa-regular fa-bell"></i>
+                <span id="notification-badge" class="absolute top-1 right-1 w-2 h-2 bg-cyan-400 rounded-full animate-ping"></span>
+            </button>
+
+            <!-- Digital Realtime Clock -->
+            <div id="system-clock-tray" class="flex flex-col items-end justify-center cursor-pointer hover:bg-white/5 px-2 py-1 rounded-lg transition-colors">
+                <span id="clock-time" class="text-xs font-semibold tracking-wider text-slate-100 font-mono">19:48</span>
+                <span id="clock-date" class="text-[10px] text-slate-400">Mon, Sep 15</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- START MENU -->
+    <div id="start-menu" class="start-menu-panel hidden-menu fixed bottom-16 left-4 z-50 w-96 glass-panel rounded-2xl p-6 shadow-2xl border border-white/15 flex flex-col gap-5">
+        <!-- Start Header -->
+        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+            <div>
+                <h3 id="start-greeting" class="text-lg font-bold text-white">Good evening, User</h3>
+                <p id="start-date-full" class="text-xs text-slate-400">Monday, September 15, 2026</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center font-bold text-white shadow-md">
+                U
+            </div>
+        </div>
+
+        <!-- Quick Application Search in Start -->
+        <div class="relative">
+            <i class="fa-solid fa-search absolute left-3 top-3 text-xs text-slate-400"></i>
+            <input type="text" id="start-search-input" placeholder="Search apps, notes, tasks..." class="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition-colors">
+        </div>
+
+        <!-- Applications Grid -->
+        <div>
+            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-3">Applications</span>
+            <div id="start-apps-grid" class="grid grid-cols-4 gap-3">
+                <!-- App grid icons populated by JS -->
+            </div>
+        </div>
+
+        <!-- Recent Items -->
+        <div class="border-t border-white/10 pt-4">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">Recent Items</span>
+            <div id="start-recent-list" class="space-y-1 text-xs">
+                <!-- Dynamic recent items -->
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION CENTER DRAWER -->
+    <div id="notification-center" class="notification-panel closed fixed top-0 right-0 bottom-14 z-40 w-80 glass-panel border-l border-white/10 p-5 flex flex-col shadow-2xl">
+        <div class="flex items-center justify-between pb-4 border-b border-white/10">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-bell text-cyan-400"></i>
+                <h3 class="font-semibold text-sm">Notifications</h3>
+            </div>
+            <button id="clear-notifications-btn" class="text-[11px] text-slate-400 hover:text-cyan-400 transition-colors">Clear All</button>
+        </div>
+
+        <div id="notification-list" class="flex-1 overflow-y-auto py-4 space-y-3">
+            <!-- Dynamic Notifications -->
+        </div>
+    </div>
+
+    <!-- GLOBAL SEARCH MODAL -->
+    <div id="global-search-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md hidden flex items-start justify-center pt-20 px-4">
+        <div class="w-full max-w-xl glass-panel rounded-2xl border border-white/15 p-4 shadow-2xl flex flex-col gap-4">
+            <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+                <i class="fa-solid fa-magnifying-glass text-cyan-400 text-lg"></i>
+                <input type="text" id="global-search-input" placeholder="Search anything in NEXUS OS... (Notes, Tasks, Events)" class="bg-transparent w-full text-white placeholder-slate-400 text-sm focus:outline-none">
+                <kbd class="text-[10px] bg-white/10 px-2 py-1 rounded text-slate-400">ESC</kbd>
+            </div>
+            
+            <div id="global-search-results" class="max-h-80 overflow-y-auto space-y-2">
+                <!-- Search results injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTEXT MENU (DESKTOP RIGHT CLICK) -->
+    <div id="context-menu" class="fixed z-50 w-48 glass-panel rounded-xl shadow-2xl border border-white/10 py-2 hidden text-xs flex-col">
+        <button onclick="NexusOS.actions.newNote()" class="flex items-center gap-3 px-4 py-2 hover:bg-cyan-500/20 text-slate-200 hover:text-cyan-300 transition-colors">
+            <i class="fa-solid fa-file-pen text-cyan-400 w-4"></i> New Note
+        </button>
+        <button onclick="NexusOS.actions.newTask()" class="flex items-center gap-3 px-4 py-2 hover:bg-cyan-500/20 text-slate-200 hover:text-cyan-300 transition-colors">
+            <i class="fa-solid fa-square-check text-emerald-400 w-4"></i> New Task
+        </button>
+        <button onclick="NexusOS.actions.newEvent()" class="flex items-center gap-3 px-4 py-2 hover:bg-cyan-500/20 text-slate-200 hover:text-cyan-300 transition-colors">
+            <i class="fa-solid fa-calendar-plus text-purple-400 w-4"></i> New Event
+        </button>
+        <div class="my-1 border-t border-white/10"></div>
+        <button onclick="window.location.reload()" class="flex items-center gap-3 px-4 py-2 hover:bg-cyan-500/20 text-slate-200 hover:text-cyan-300 transition-colors">
+            <i class="fa-solid fa-rotate text-blue-400 w-4"></i> Refresh System
+        </button>
+        <button onclick="NexusOS.wm.openApp('settings')" class="flex items-center gap-3 px-4 py-2 hover:bg-cyan-500/20 text-slate-200 hover:text-cyan-300 transition-colors">
+            <i class="fa-solid fa-gear text-slate-400 w-4"></i> Settings
+        </button>
+    </div>
+
+    <!-- ==========================================================================
+       JAVASCRIPT LOGIC & OS ENGINE
+       ========================================================================== -->
+    <script>
+        // ==========================================================================
+        // 1. STATE & LOCALSTORAGE MANAGER
+        // ==========================================================================
+        const Storage = {
+            KEY: 'NEXUS_OS_DATA_V1',
+            
+            getDefaults() {
+                return {
+                    settings: {
+                        theme: 'dark',
+                        accent: 'cyan',
+                        wallpaper: 'futuristic-grid',
+                        startOfWeek: 'Monday',
+                        calendarView: 'month'
+                    },
+                    notes: [
+                        { id: '1', title: 'NEXUS OS Architecture', content: 'Explore single-file desktop environment design with responsive glassmorphic UI.', category: 'Personal', favorite: true, updatedAt: new Date().toISOString() },
+                        { id: '2', title: 'Project Roadmap Q4', content: '1. Complete core window manager\n2. Integrate state persistence\n3. Finalize task manager.', category: 'Work', favorite: false, updatedAt: new Date().toISOString() }
+                    ],
+                    tasks: [
+                        { id: '1', title: 'Finish NEXUS OS Prototype', dueDate: '2026-09-15', priority: 'High', category: 'Work', completed: false },
+                        { id: '2', title: 'Review System Specs', dueDate: '2026-09-16', priority: 'Medium', category: 'Work', completed: true },
+                        { id: '3', title: 'Evening Reading', dueDate: '2026-09-15', priority: 'Low', category: 'Personal', completed: false }
+                    ],
+                    events: [
+                        { id: '1', title: 'Team Sync Meeting', date: '2026-09-15', startTime: '09:00', endTime: '10:00', category: 'Work', description: 'Weekly progress alignment.' },
+                        { id: '2', title: 'Product Launch Review', date: '2026-09-15', startTime: '15:00', endTime: '16:30', category: 'Work', description: 'Evaluate release candidate.' },
+                        { id: '3', title: 'Gym Workout', date: '2026-09-15', startTime: '17:00', endTime: '18:00', category: 'Personal', description: 'Cardio & strength training.' }
+                    ],
+                    planners: [
+                        { id: '1', time: '08:00', title: 'Morning Routine & Coffee', category: 'Personal', priority: 'Medium', completed: true },
+                        { id: '2', time: '09:00', title: 'Deep Work Session', category: 'Work', priority: 'High', completed: true },
+                        { id: '3', time: '13:00', title: 'Lunch & Relax', category: 'Personal', priority: 'Low', completed: false },
+                        { id: '4', time: '14:00', title: 'System Development', category: 'Work', priority: 'High', completed: false }
+                    ],
+                    schedules: [
+                        { time: '08:00', label: 'Morning Planning' },
+                        { time: '09:00', label: 'Work & Coding' },
+                        { time: '12:00', label: 'Lunch Break' },
+                        { time: '14:00', label: 'Team Collaboration' },
+                        { time: '18:00', label: 'Personal Time' }
+                    ],
+                    notifications: [
+                        { id: '1', title: 'Meeting Reminder', body: 'Team Sync starts in 15 minutes', time: '08:45 AM', read: false },
+                        { id: '2', title: 'System Update', body: 'NEXUS OS v1.0 running smoothly', time: '09:00 AM', read: false }
+                    ]
+                };
+            },
+
+            load() {
+                try {
+                    const raw = localStorage.getItem(this.KEY);
+                    return raw ? JSON.parse(raw) : this.getDefaults();
+                } catch (e) {
+                    console.error('Failed to load state from localStorage', e);
+                    return this.getDefaults();
+                }
+            },
+
+            save(data) {
+                try {
+                    localStorage.setItem(this.KEY, JSON.stringify(data));
+                } catch (e) {
+                    console.error('Failed to save state to localStorage', e);
+                }
+            }
+        };
+
+        // State Store Singleton
+        let store = Storage.load();
+
+        // Application Registry Definitions
+        const APP_REGISTRY = {
+            dashboard: { id: 'dashboard', name: 'Dashboard', icon: 'fa-gauge-high', color: 'from-cyan-500 to-blue-500' },
+            notes: { id: 'notes', name: 'Notes', icon: 'fa-note-sticky', color: 'from-amber-400 to-orange-500' },
+            planner: { id: 'planner', name: 'Planner', icon: 'fa-list-check', color: 'from-emerald-400 to-teal-600' },
+            calendar: { id: 'calendar', name: 'Calendar', icon: 'fa-calendar-days', color: 'from-purple-500 to-pink-500' },
+            schedule: { id: 'schedule', name: 'Schedule', icon: 'fa-clock', color: 'from-blue-400 to-indigo-600' },
+            tasks: { id: 'tasks', name: 'Tasks', icon: 'fa-circle-check', color: 'from-rose-500 to-red-600' },
+            files: { id: 'files', name: 'Files', icon: 'fa-folder-open', color: 'from-yellow-500 to-amber-600' },
+            settings: { id: 'settings', name: 'Settings', icon: 'fa-gear', color: 'from-slate-500 to-slate-700' }
+        };
+
+        // ==========================================================================
+        // 2. WINDOW MANAGER (WM)
+        // ==========================================================================
+        class WindowManager {
+            constructor() {
+                this.windows = {}; // appId -> DOM Element
+                this.activeAppId = null;
+                this.highestZ = 100;
+                this.dragState = null;
+                
+                this.initListeners();
+            }
+
+            initListeners() {
+                document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                document.addEventListener('mouseup', () => this.handleMouseUp());
+            }
+
+            openApp(appId, customParams = {}) {
+                if (!APP_REGISTRY[appId]) return;
+
+                if (this.windows[appId]) {
+                    // Bring to front if minimized or inactive
+                    const win = this.windows[appId];
+                    if (win.classList.contains('minimized')) {
+                        win.classList.remove('minimized');
+                    }
+                    this.bringToFront(appId);
+                    return;
+                }
+
+                // Render Window
+                const app = APP_REGISTRY[appId];
+                const winEl = document.createElement('div');
+                winEl.id = `window-${appId}`;
+                winEl.className = 'nexus-window active pointer-events-auto';
+                
+                // Position initial window nicely centered / staggered
+                const offset = Object.keys(this.windows).length * 25;
+                const isMobile = window.innerWidth < 768;
+                
+                if (isMobile) {
+                    winEl.style.width = '100%';
+                    winEl.style.height = 'calc(100% - 56px)';
+                    winEl.style.top = '0px';
+                    winEl.style.left = '0px';
+                } else {
+                    winEl.style.width = '780px';
+                    winEl.style.height = '520px';
+                    winEl.style.top = `${Math.max(40, 80 + offset)}px`;
+                    winEl.style.left = `${Math.max(40, 150 + offset)}px`;
+                }
+
+                winEl.style.zIndex = ++this.highestZ;
+
+                winEl.innerHTML = `
+                    <div class="window-titlebar" onmousedown="NexusOS.wm.startDrag(event, '${appId}')">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid ${app.icon} text-cyan-400 text-xs"></i>
+                            <span class="text-xs font-semibold text-slate-200 tracking-wide">${app.name}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button class="window-control-btn" onclick="NexusOS.wm.minimizeApp('${appId}')"><i class="fa-solid fa-minus"></i></button>
+                            <button class="window-control-btn" onclick="NexusOS.wm.toggleMaximize('${appId}')"><i class="fa-regular fa-square"></i></button>
+                            <button class="window-control-btn close" onclick="NexusOS.wm.closeApp('${appId}')"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-auto p-4 relative" id="win-content-${appId}">
+                        <!-- App Content Root -->
+                    </div>
+                `;
+
+                // Append to DOM
+                document.getElementById('window-container').appendChild(winEl);
+                this.windows[appId] = winEl;
+                this.activeAppId = appId;
+
+                // Render app content inside
+                this.renderAppContent(appId, customParams);
+                this.updateTaskbar();
+
+                // Focus click listener
+                winEl.addEventListener('mousedown', () => this.bringToFront(appId));
+            }
+
+            renderAppContent(appId, params = {}) {
+                const container = document.getElementById(`win-content-${appId}`);
+                if (!container) return;
+
+                switch (appId) {
+                    case 'dashboard': renderDashboardApp(container); break;
+                    case 'notes': renderNotesApp(container, params); break;
+                    case 'planner': renderPlannerApp(container); break;
+                    case 'calendar': renderCalendarApp(container); break;
+                    case 'schedule': renderScheduleApp(container); break;
+                    case 'tasks': renderTasksApp(container); break;
+                    case 'files': renderFilesApp(container); break;
+                    case 'settings': renderSettingsApp(container); break;
+                }
+            }
+
+            bringToFront(appId) {
+                if (this.windows[appId]) {
+                    this.highestZ++;
+                    this.windows[appId].style.zIndex = this.highestZ;
+                    
+                    Object.values(this.windows).forEach(w => w.classList.remove('active'));
+                    this.windows[appId].classList.add('active');
+                    this.activeAppId = appId;
+                    this.updateTaskbar();
+                }
+            }
+
+            minimizeApp(appId) {
+                if (this.windows[appId]) {
+                    this.windows[appId].classList.add('minimized');
+                    this.updateTaskbar();
+                }
+            }
+
+            toggleMaximize(appId) {
+                const win = this.windows[appId];
+                if (!win) return;
+
+                if (win.classList.contains('maximized')) {
+                    win.classList.remove('maximized');
+                    win.style.top = win.dataset.oldTop || '80px';
+                    win.style.left = win.dataset.oldLeft || '150px';
+                    win.style.width = win.dataset.oldWidth || '780px';
+                    win.style.height = win.dataset.oldHeight || '520px';
+                } else {
+                    win.dataset.oldTop = win.style.top;
+                    win.dataset.oldLeft = win.style.left;
+                    win.dataset.oldWidth = win.style.width;
+                    win.dataset.oldHeight = win.style.height;
+
+                    win.classList.add('maximized');
+                    win.style.top = '0px';
+                    win.style.left = '0px';
+                    win.style.width = '100%';
+                    win.style.height = 'calc(100vh - 56px)';
+                }
+            }
+
+            closeApp(appId) {
+                if (this.windows[appId]) {
+                    this.windows[appId].remove();
+                    delete this.windows[appId];
+                    this.updateTaskbar();
+                }
+            }
+
+            // Window Snap & Movement Handling
+            startDrag(e, appId) {
+                if (e.target.closest('.window-control-btn')) return;
+                const win = this.windows[appId];
+                if (!win || win.classList.contains('maximized')) return;
+
+                this.bringToFront(appId);
+                const rect = win.getBoundingClientRect();
+                this.dragState = {
+                    appId,
+                    offsetX: e.clientX - rect.left,
+                    offsetY: e.clientY - rect.top
+                };
+            }
+
+            handleMouseMove(e) {
+                if (!this.dragState) return;
+                const win = this.windows[this.dragState.appId];
+                if (!win) return;
+
+                let left = e.clientX - this.dragState.offsetX;
+                let top = e.clientY - this.dragState.offsetY;
+
+                // Restrict top
+                if (top < 0) top = 0;
+
+                win.style.left = `${left}px`;
+                win.style.top = `${top}px`;
+
+                // Snap layout visual trigger preview
+                const snapOverlay = document.getElementById('snap-preview');
+                const screenW = window.innerWidth;
+                const screenH = window.innerHeight - 56;
+
+                if (e.clientX < 20) {
+                    // Left Snap
+                    snapOverlay.style.top = '0px';
+                    snapOverlay.style.left = '0px';
+                    snapOverlay.style.width = '50vw';
+                    snapOverlay.style.height = `${screenH}px`;
+                    snapOverlay.classList.add('visible');
+                    this.dragState.snapType = 'left';
+                } else if (e.clientX > screenW - 20) {
+                    // Right Snap
+                    snapOverlay.style.top = '0px';
+                    snapOverlay.style.left = '50vw';
+                    snapOverlay.style.width = '50vw';
+                    snapOverlay.style.height = `${screenH}px`;
+                    snapOverlay.classList.add('visible');
+                    this.dragState.snapType = 'right';
+                } else if (e.clientY < 15) {
+                    // Top Snap Maximize
+                    snapOverlay.style.top = '0px';
+                    snapOverlay.style.left = '0px';
+                    snapOverlay.style.width = '100vw';
+                    snapOverlay.style.height = `${screenH}px`;
+                    snapOverlay.classList.add('visible');
+                    this.dragState.snapType = 'top';
+                } else {
+                    snapOverlay.classList.remove('visible');
+                    this.dragState.snapType = null;
+                }
+            }
+
+            handleMouseUp() {
+                if (!this.dragState) return;
+                const snapOverlay = document.getElementById('snap-preview');
+                snapOverlay.classList.remove('visible');
+
+                const win = this.windows[this.dragState.appId];
+                const screenH = window.innerHeight - 56;
+
+                if (win && this.dragState.snapType) {
+                    if (this.dragState.snapType === 'left') {
+                        win.style.top = '0px';
+                        win.style.left = '0px';
+                        win.style.width = '50vw';
+                        win.style.height = `${screenH}px`;
+                    } else if (this.dragState.snapType === 'right') {
+                        win.style.top = '0px';
+                        win.style.left = '50vw';
+                        win.style.width = '50vw';
+                        win.style.height = `${screenH}px`;
+                    } else if (this.dragState.snapType === 'top') {
+                        this.toggleMaximize(this.dragState.appId);
+                    }
+                }
+
+                this.dragState = null;
+            }
+
+            updateTaskbar() {
+                const container = document.getElementById('taskbar-apps');
+                container.innerHTML = '';
+
+                Object.keys(this.windows).forEach(appId => {
+                    const app = APP_REGISTRY[appId];
+                    const win = this.windows[appId];
+                    const isActive = this.activeAppId === appId && !win.classList.contains('minimized');
+
+                    const btn = document.createElement('button');
+                    btn.className = `taskbar-item relative flex items-center justify-center w-10 h-10 rounded-xl transition-all ${
+                        isActive ? 'bg-white/15 text-white active-app' : 'hover:bg-white/10 text-slate-400'
+                    }`;
+                    btn.title = app.name;
+                    btn.innerHTML = `<i class="fa-solid ${app.icon} text-base"></i>`;
+                    
+                    btn.onclick = () => {
+                        if (win.classList.contains('minimized')) {
+                            win.classList.remove('minimized');
+                            this.bringToFront(appId);
+                        } else if (isActive) {
+                            this.minimizeApp(appId);
+                        } else {
+                            this.bringToFront(appId);
+                        }
+                    };
+
+                    container.appendChild(btn);
+                });
+            }
+        }
+
+        // ==========================================================================
+        // 3. APPLICATION RENDERERS
+        // ==========================================================================
+
+        // DASHBOARD APP
+        function renderDashboardApp(container) {
+            const completedTasks = store.tasks.filter(t => t.completed).length;
+            const totalTasks = store.tasks.length;
+            const taskProgress = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <!-- Greeting Banner -->
+                    <div class="glass-card p-6 rounded-2xl bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-transparent border border-cyan-500/20">
+                        <h2 class="text-2xl font-bold text-white mb-1">Good evening, User</h2>
+                        <p class="text-xs text-slate-400">Here is your high-level workspace activity summary for today.</p>
+                    </div>
+
+                    <!-- Widgets Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Today Progress Widget -->
+                        <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs text-slate-400 font-semibold uppercase">Task Progress</span>
+                                <i class="fa-solid fa-chart-line text-cyan-400"></i>
+                            </div>
+                            <div class="text-3xl font-bold text-cyan-400 mb-2">${taskProgress}%</div>
+                            <div class="w-full bg-slate-800 rounded-full h-2 mb-2 overflow-hidden">
+                                <div class="bg-gradient-to-r from-cyan-400 to-blue-500 h-2 rounded-full" style="width: ${taskProgress}%"></div>
+                            </div>
+                            <span class="text-[11px] text-slate-400">${completedTasks} of ${totalTasks} completed</span>
+                        </div>
+
+                        <!-- Active Focus Task -->
+                        <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-slate-400 font-semibold uppercase">Focus Target</span>
+                                <i class="fa-solid fa-bullseye text-purple-400"></i>
+                            </div>
+                            <p class="text-sm font-semibold text-slate-200 line-clamp-2">${store.tasks.find(t => !t.completed)?.title || 'No active task'}</p>
+                            <button onclick="NexusOS.wm.openApp('tasks')" class="mt-3 text-xs text-cyan-400 hover:underline text-left">View Task Manager &rarr;</button>
+                        </div>
+
+                        <!-- Upcoming Schedule -->
+                        <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-slate-400 font-semibold uppercase">Next Event</span>
+                                <i class="fa-regular fa-clock text-emerald-400"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold text-emerald-400">15:00 — Project Review</div>
+                                <div class="text-[11px] text-slate-400">Product release candidate</div>
+                            </div>
+                            <button onclick="NexusOS.wm.openApp('calendar')" class="mt-3 text-xs text-cyan-400 hover:underline text-left">Open Calendar &rarr;</button>
+                        </div>
+                    </div>
+
+                    <!-- Recent Notes Preview -->
+                    <div class="glass-card p-4 rounded-xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs text-slate-400 font-semibold uppercase">Recent Notes</span>
+                            <button onclick="NexusOS.wm.openApp('notes')" class="text-xs text-cyan-400 hover:underline">All Notes</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${store.notes.slice(0, 2).map(note => `
+                                <div onclick="NexusOS.wm.openApp('notes', { noteId: '${note.id}' })" class="p-3 bg-white/5 rounded-lg border border-white/5 hover:border-cyan-400/40 cursor-pointer transition-all">
+                                    <div class="font-semibold text-xs text-slate-200 mb-1">${note.title}</div>
+                                    <div class="text-[11px] text-slate-400 line-clamp-2">${note.content}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // NOTES APP
+        function renderNotesApp(container, params = {}) {
+            let activeNoteId = params.noteId || (store.notes[0] ? store.notes[0].id : null);
+
+            function updateUI() {
+                const activeNote = store.notes.find(n => n.id === activeNoteId);
+
+                container.innerHTML = `
+                    <div class="flex h-full gap-4 text-xs">
+                        <!-- Notes Sidebar -->
+                        <div class="w-48 bg-white/5 rounded-xl p-3 flex flex-col justify-between border border-white/5">
+                            <div>
+                                <button id="btn-add-note" class="w-full py-2 mb-3 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-semibold rounded-lg border border-cyan-500/30 transition-all">
+                                    <i class="fa-solid fa-plus mr-1"></i> New Note
+                                </button>
+                                <div class="space-y-1 text-slate-400">
+                                    <div class="px-2 py-1.5 rounded-lg bg-white/10 text-white font-semibold cursor-pointer"><i class="fa-solid fa-folder mr-2"></i> All Notes</div>
+                                    <div class="px-2 py-1.5 rounded-lg hover:bg-white/5 cursor-pointer"><i class="fa-solid fa-star mr-2 text-amber-400"></i> Favorites</div>
+                                </div>
+                            </div>
+                            <div class="text-[10px] text-slate-500">${store.notes.length} notes saved</div>
+                        </div>
+
+                        <!-- Notes List -->
+                        <div class="w-56 overflow-y-auto space-y-2 pr-1">
+                            ${store.notes.map(note => `
+                                <div onclick="window.selectNote('${note.id}')" class="p-3 rounded-xl border transition-all cursor-pointer ${
+                                    note.id === activeNoteId ? 'bg-cyan-500/15 border-cyan-500/40 text-white' : 'bg-white/5 border-white/5 hover:bg-white/10 text-slate-300'
+                                }">
+                                    <div class="font-semibold text-xs mb-1 truncate">${note.title || 'Untitled Note'}</div>
+                                    <div class="text-[11px] text-slate-400 truncate">${note.content || 'No content'}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <!-- Note Editor -->
+                        <div class="flex-1 bg-white/5 rounded-xl p-4 flex flex-col border border-white/5">
+                            ${activeNote ? `
+                                <input type="text" id="note-editor-title" value="${activeNote.title}" placeholder="Note Title" class="bg-transparent text-base font-bold text-white mb-3 focus:outline-none border-b border-white/10 pb-2">
+                                <textarea id="note-editor-content" placeholder="Start typing your note..." class="flex-1 bg-transparent text-slate-300 focus:outline-none resize-none leading-relaxed text-xs">${activeNote.content}</textarea>
+                                <div class="flex justify-between items-center pt-3 border-t border-white/10 text-slate-400">
+                                    <button onclick="window.deleteNote('${activeNote.id}')" class="hover:text-red-400"><i class="fa-solid fa-trash mr-1"></i> Delete</button>
+                                    <span class="text-[10px]">Autosaved to LocalStorage</span>
+                                </div>
+                            ` : `<div class="flex-1 flex items-center justify-center text-slate-500">Select or create a note</div>`}
+                        </div>
+                    </div>
+                `;
+
+                // Add handlers
+                const addBtn = container.querySelector('#btn-add-note');
+                if (addBtn) {
+                    addBtn.onclick = () => {
+                        const newNote = { id: Date.now().toString(), title: 'New Note', content: '', category: 'Personal', favorite: false, updatedAt: new Date().toISOString() };
+                        store.notes.unshift(newNote);
+                        Storage.save(store);
+                        activeNoteId = newNote.id;
+                        updateUI();
+                    };
+                }
+
+                const titleInput = container.querySelector('#note-editor-title');
+                const contentInput = container.querySelector('#note-editor-content');
+
+                if (titleInput && contentInput) {
+                    const saveNote = () => {
+                        activeNote.title = titleInput.value;
+                        activeNote.content = contentInput.value;
+                        Storage.save(store);
+                    };
+                    titleInput.oninput = saveNote;
+                    contentInput.oninput = saveNote;
+                }
+            }
+
+            window.selectNote = (id) => { activeNoteId = id; updateUI(); };
+            window.deleteNote = (id) => {
+                store.notes = store.notes.filter(n => n.id !== id);
+                Storage.save(store);
+                activeNoteId = store.notes[0] ? store.notes[0].id : null;
+                updateUI();
+            };
+
+            updateUI();
+        }
+
+        // PLANNER APP
+        function renderPlannerApp(container) {
+            function updateUI() {
+                container.innerHTML = `
+                    <div class="flex flex-col h-full gap-4 text-xs">
+                        <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
+                            <span class="font-bold text-slate-200">Today's Execution Plan</span>
+                            <button id="add-plan-btn" class="px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-semibold rounded-lg border border-cyan-500/30">
+                                + Add Plan
+                            </button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto space-y-2">
+                            ${store.planners.map(plan => `
+                                <div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 transition-all">
+                                    <div class="flex items-center gap-3">
+                                        <input type="checkbox" ${plan.completed ? 'checked' : ''} onchange="window.togglePlan('${plan.id}')" class="accent-cyan-400 w-4 h-4 cursor-pointer">
+                                        <div>
+                                            <span class="font-mono text-cyan-400 text-xs mr-2">[${plan.time}]</span>
+                                            <span class="${plan.completed ? 'line-through text-slate-500' : 'text-slate-200'} font-semibold">${plan.title}</span>
+                                        </div>
+                                    </div>
+                                    <span class="px-2 py-0.5 rounded text-[10px] bg-white/10 text-slate-300">${plan.priority} Priority</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+                container.querySelector('#add-plan-btn').onclick = () => {
+                    const title = prompt('Enter plan title:');
+                    const time = prompt('Enter time (e.g., 10:00):') || '10:00';
+                    if (title) {
+                        store.planners.push({ id: Date.now().toString(), time, title, category: 'Work', priority: 'Medium', completed: false });
+                        Storage.save(store);
+                        updateUI();
+                    }
+                };
+            }
+
+            window.togglePlan = (id) => {
+                const item = store.planners.find(p => p.id === id);
+                if (item) { item.completed = !item.completed; Storage.save(store); updateUI(); }
+            };
+
+            updateUI();
+        }
+
+        // SCHEDULE APP
+        function renderScheduleApp(container) {
+            container.innerHTML = `
+                <div class="h-full flex flex-col text-xs">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-bold text-slate-200">Daily Timeline Schedule</span>
+                        <button onclick="window.addScheduleItem()" class="px-3 py-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 rounded-lg border border-cyan-500/30">+ Add Schedule</button>
+                    </div>
+                    <div class="flex-1 overflow-y-auto space-y-4 relative pl-6 border-l-2 border-cyan-500/30">
+                        ${store.schedules.map(sch => `
+                            <div class="relative">
+                                <div class="absolute -left-[31px] top-1 w-3 h-3 rounded-full bg-cyan-400 shadow-md shadow-cyan-400/50"></div>
+                                <div class="font-mono text-cyan-400 font-bold mb-1">${sch.time}</div>
+                                <div class="p-3 bg-white/5 border border-white/5 rounded-xl font-medium text-slate-200">${sch.label}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            window.addScheduleItem = () => {
+                const time = prompt('Enter time (e.g. 16:00):');
+                const label = prompt('Enter activity label:');
+                if (time && label) {
+                    store.schedules.push({ time, label });
+                    Storage.save(store);
+                    renderScheduleApp(container);
+                }
+            };
+        }
+
+        // CALENDAR APP
+        function renderCalendarApp(container) {
+            const today = new Date();
+            let currentMonth = today.getMonth();
+            let currentYear = today.getFullYear();
+
+            function renderCalendarView() {
+                const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+                let daysHTML = '';
+                for (let x = 0; x < firstDayIndex; x++) {
+                    daysHTML += `<div class="p-2 opacity-20 text-center"></div>`;
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const hasEvents = store.events.some(e => e.date === dateStr);
+
+                    daysHTML += `
+                        <div onclick="window.selectCalendarDate('${dateStr}')" class="p-2 h-16 bg-white/5 border border-white/5 rounded-xl hover:border-cyan-400/50 cursor-pointer flex flex-col justify-between transition-all">
+                            <span class="font-bold text-xs ${day === today.getDate() && currentMonth === today.getMonth() ? 'text-cyan-400' : 'text-slate-300'}">${day}</span>
+                            ${hasEvents ? `<span class="w-2 h-2 rounded-full bg-cyan-400 self-end"></span>` : ''}
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = `
+                    <div class="flex flex-col h-full gap-4 text-xs">
+                        <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
+                            <div class="flex items-center gap-3">
+                                <h3 class="font-bold text-sm text-slate-100">${monthNames[currentMonth]} ${currentYear}</h3>
+                                <div class="flex gap-1">
+                                    <button id="prev-month" class="px-2 py-1 bg-white/10 hover:bg-white/20 rounded"><i class="fa-solid fa-chevron-left"></i></button>
+                                    <button id="next-month" class="px-2 py-1 bg-white/10 hover:bg-white/20 rounded"><i class="fa-solid fa-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            <button onclick="window.addNewEvent()" class="px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-semibold rounded-lg border border-cyan-500/30">+ New Event</button>
+                        </div>
+
+                        <!-- Days Header -->
+                        <div class="grid grid-cols-7 gap-2 text-center text-[11px] font-bold text-slate-400">
+                            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                        </div>
+
+                        <!-- Calendar Days Grid -->
+                        <div class="grid grid-cols-7 gap-2 flex-1 overflow-y-auto">
+                            ${daysHTML}
+                        </div>
+                    </div>
+                `;
+
+                container.querySelector('#prev-month').onclick = () => { currentMonth--; renderCalendarView(); };
+                container.querySelector('#next-month').onclick = () => { currentMonth++; renderCalendarView(); };
+            }
+
+            window.selectCalendarDate = (dateStr) => {
+                const dayEvents = store.events.filter(e => e.date === dateStr);
+                alert(`Events for ${dateStr}:\n` + (dayEvents.map(e => `- ${e.startTime}: ${e.title}`).join('\n') || 'No events recorded.'));
+            };
+
+            window.addNewEvent = () => {
+                const title = prompt('Event Title:');
+                const date = prompt('Date (YYYY-MM-DD):', '2026-09-15');
+                const startTime = prompt('Start Time (HH:MM):', '10:00');
+                if (title && date) {
+                    store.events.push({ id: Date.now().toString(), title, date, startTime, category: 'Work' });
+                    Storage.save(store);
+                    renderCalendarView();
+                }
+            };
+
+            renderCalendarView();
+        }
+
+        // TASKS APP
+        function renderTasksApp(container) {
+            function updateUI() {
+                container.innerHTML = `
+                    <div class="flex flex-col h-full gap-4 text-xs">
+                        <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
+                            <span class="font-bold text-slate-200">Task Manager</span>
+                            <button id="add-task-btn" class="px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-semibold rounded-lg border border-cyan-500/30">+ New Task</button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto space-y-2">
+                            ${store.tasks.map(task => `
+                                <div class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:border-cyan-500/30 transition-all">
+                                    <div class="flex items-center gap-3">
+                                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="window.toggleTask('${task.id}')" class="accent-cyan-400 w-4 h-4 cursor-pointer">
+                                        <span class="${task.completed ? 'line-through text-slate-500' : 'text-slate-200'} font-semibold">${task.title}</span>
+                                    </div>
+                                    <span class="px-2 py-0.5 rounded text-[10px] ${task.priority === 'High' ? 'bg-red-500/20 text-red-300' : 'bg-white/10 text-slate-400'}">${task.priority}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+                container.querySelector('#add-task-btn').onclick = () => {
+                    const title = prompt('Task Title:');
+                    if (title) {
+                        store.tasks.push({ id: Date.now().toString(), title, dueDate: '2026-09-15', priority: 'Medium', category: 'Work', completed: false });
+                        Storage.save(store);
+                        updateUI();
+                    }
+                };
+            }
+
+            window.toggleTask = (id) => {
+                const t = store.tasks.find(x => x.id === id);
+                if (t) { t.completed = !t.completed; Storage.save(store); updateUI(); }
+            };
+
+            updateUI();
+        }
+
+        // FILES APP
+        function renderFilesApp(container) {
+            container.innerHTML = `
+                <div class="h-full flex flex-col text-xs space-y-4">
+                    <div class="flex items-center gap-2 border-b border-white/10 pb-3">
+                        <span class="font-bold text-slate-300">Root Directory</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="p-4 bg-white/5 border border-white/5 rounded-xl hover:border-cyan-400 flex flex-col items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-folder text-3xl text-amber-400"></i>
+                            <span>Documents</span>
+                        </div>
+                        <div class="p-4 bg-white/5 border border-white/5 rounded-xl hover:border-cyan-400 flex flex-col items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-folder text-3xl text-cyan-400"></i>
+                            <span>Projects</span>
+                        </div>
+                        <div class="p-4 bg-white/5 border border-white/5 rounded-xl hover:border-cyan-400 flex flex-col items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-image text-3xl text-purple-400"></i>
+                            <span>Wallpapers</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // SETTINGS APP
+        function renderSettingsApp(container) {
+            container.innerHTML = `
+                <div class="h-full flex flex-col text-xs space-y-6 text-slate-200">
+                    <h3 class="font-bold text-sm border-b border-white/10 pb-2">System Personalization</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-semibold">Accent Theme</div>
+                                <div class="text-[11px] text-slate-400">Choose primary highlight color</div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="NexusOS.setThemeAccent('cyan')" class="w-6 h-6 rounded-full bg-cyan-400 ring-2 ring-white/20"></button>
+                                <button onclick="NexusOS.setThemeAccent('purple')" class="w-6 h-6 rounded-full bg-purple-500 ring-2 ring-white/20"></button>
+                                <button onclick="NexusOS.setThemeAccent('emerald')" class="w-6 h-6 rounded-full bg-emerald-400 ring-2 ring-white/20"></button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between border-t border-white/10 pt-4">
+                            <div>
+                                <div class="font-semibold">Reset State Data</div>
+                                <div class="text-[11px] text-slate-400">Restore default demo workspace state</div>
+                            </div>
+                            <button onclick="NexusOS.resetData()" class="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg border border-red-500/30">Reset OS</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================================================
+        // 4. MAIN OS CONTROLLER & SYSTEM INTEGRATION
+        // ==========================================================================
+        class OSController {
+            constructor() {
+                this.wm = new WindowManager();
+                this.actions = {
+                    newNote: () => {
+                        this.wm.openApp('notes');
+                        setTimeout(() => {
+                            const btn = document.querySelector('#btn-add-note');
+                            if (btn) btn.click();
+                        }, 100);
+                    },
+                    newTask: () => {
+                        this.wm.openApp('tasks');
+                        setTimeout(() => {
+                            const btn = document.querySelector('#add-task-btn');
+                            if (btn) btn.click();
+                        }, 100);
+                    },
+                    newEvent: () => {
+                        this.wm.openApp('calendar');
+                        setTimeout(() => {
+                            if (window.addNewEvent) window.addNewEvent();
+                        }, 100);
+                    }
+                };
+
+                this.initDesktopIcons();
+                this.initStartMenu();
+                this.initClock();
+                this.initSearch();
+                this.initNotifications();
+                this.initKeyboardShortcuts();
+                this.initContextMenu();
+                
+                // Open Dashboard by Default
+                setTimeout(() => this.wm.openApp('dashboard'), 200);
+            }
+
+            initDesktopIcons() {
+                const container = document.getElementById('desktop-workspace');
+                container.innerHTML = '';
+
+                Object.values(APP_REGISTRY).forEach(app => {
+                    const iconEl = document.createElement('div');
+                    iconEl.className = 'flex flex-col items-center justify-center w-20 h-22 p-2 rounded-2xl hover:bg-white/10 cursor-pointer transition-all duration-200 group';
+                    iconEl.innerHTML = `
+                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr ${app.color} flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fa-solid ${app.icon}"></i>
+                        </div>
+                        <span class="mt-2 text-[11px] font-medium text-slate-200 text-center tracking-wide group-hover:text-cyan-300">${app.name}</span>
+                    `;
+                    iconEl.ondblclick = () => this.wm.openApp(app.id);
+                    iconEl.onclick = () => this.wm.openApp(app.id); // Also single click support for quick accessibility
+                    container.appendChild(iconEl);
+                });
+            }
+
+            initStartMenu() {
+                const btn = document.getElementById('start-btn');
+                const menu = document.getElementById('start-menu');
+                const grid = document.getElementById('start-apps-grid');
+
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    menu.classList.toggle('hidden-menu');
+                };
+
+                // Populate Start Apps Grid
+                grid.innerHTML = '';
+                Object.values(APP_REGISTRY).forEach(app => {
+                    const el = document.createElement('div');
+                    el.className = 'flex flex-col items-center p-2 rounded-xl hover:bg-white/10 cursor-pointer transition-all';
+                    el.innerHTML = `
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr ${app.color} flex items-center justify-center text-white text-base shadow mb-1">
+                            <i class="fa-solid ${app.icon}"></i>
+                        </div>
+                        <span class="text-[10px] text-slate-300">${app.name}</span>
+                    `;
+                    el.onclick = () => {
+                        this.wm.openApp(app.id);
+                        menu.classList.add('hidden-menu');
+                    };
+                    grid.appendChild(el);
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                        menu.classList.add('hidden-menu');
+                    }
+                });
+            }
+
+            initClock() {
+                const timeEl = document.getElementById('clock-time');
+                const dateEl = document.getElementById('clock-date');
+
+                const update = () => {
+                    const now = new Date();
+                    timeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                    dateEl.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                };
+                update();
+                setInterval(update, 1000);
+            }
+
+            initSearch() {
+                const searchBtn = document.getElementById('search-trigger-btn');
+                const modal = document.getElementById('global-search-modal');
+                const input = document.getElementById('global-search-input');
+                const results = document.getElementById('global-search-results');
+
+                const toggleSearch = () => {
+                    modal.classList.toggle('hidden');
+                    if (!modal.classList.contains('hidden')) {
+                        input.value = '';
+                        input.focus();
+                        renderResults('');
+                    }
+                };
+
+                searchBtn.onclick = toggleSearch;
+
+                const renderResults = (query) => {
+                    results.innerHTML = '';
+                    const q = query.toLowerCase().trim();
+
+                    if (!q) {
+                        results.innerHTML = `<div class="text-xs text-slate-500 py-4 text-center">Type to search notes, tasks, or applications...</div>`;
+                        return;
+                    }
+
+                    // Search Applications
+                    Object.values(APP_REGISTRY).filter(a => a.name.toLowerCase().includes(q)).forEach(app => {
+                        const item = document.createElement('div');
+                        item.className = 'p-2.5 rounded-xl bg-white/5 hover:bg-cyan-500/20 cursor-pointer flex items-center gap-3 text-xs';
+                        item.innerHTML = `<i class="fa-solid ${app.icon} text-cyan-400"></i> App: ${app.name}`;
+                        item.onclick = () => { this.wm.openApp(app.id); toggleSearch(); };
+                        results.appendChild(item);
+                    });
+
+                    // Search Notes
+                    store.notes.filter(n => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q)).forEach(note => {
+                        const item = document.createElement('div');
+                        item.className = 'p-2.5 rounded-xl bg-white/5 hover:bg-cyan-500/20 cursor-pointer flex items-center gap-3 text-xs';
+                        item.innerHTML = `<i class="fa-solid fa-note-sticky text-amber-400"></i> Note: ${note.title}`;
+                        item.onclick = () => { this.wm.openApp('notes', { noteId: note.id }); toggleSearch(); };
+                        results.appendChild(item);
+                    });
+                };
+
+                input.oninput = (e) => renderResults(e.target.value);
+            }
+
+            initNotifications() {
+                const btn = document.getElementById('notification-btn');
+                const panel = document.getElementById('notification-center');
+                const list = document.getElementById('notification-list');
+
+                btn.onclick = () => panel.classList.toggle('closed');
+
+                list.innerHTML = store.notifications.map(n => `
+                    <div class="p-3 bg-white/5 rounded-xl border border-white/5 space-y-1">
+                        <div class="font-semibold text-xs text-slate-200">${n.title}</div>
+                        <div class="text-[11px] text-slate-400">${n.body}</div>
+                    </div>
+                `).join('');
+
+                document.getElementById('clear-notifications-btn').onclick = () => {
+                    store.notifications = [];
+                    Storage.save(store);
+                    list.innerHTML = `<div class="text-xs text-slate-500 text-center py-4">No notifications</div>`;
+                };
+            }
+
+            initContextMenu() {
+                const cm = document.getElementById('context-menu');
+                document.getElementById('desktop-workspace').oncontextmenu = (e) => {
+                    e.preventDefault();
+                    cm.style.top = `${e.clientY}px`;
+                    cm.style.left = `${e.clientX}px`;
+                    cm.classList.remove('hidden');
+                    cm.classList.add('flex');
+                };
+
+                document.addEventListener('click', () => {
+                    cm.classList.add('hidden');
+                    cm.classList.remove('flex');
+                });
+            }
+
+            initKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 'n') {
+                        e.preventDefault();
+                        this.actions.newNote();
+                    } else if (e.ctrlKey && e.key === 'k') {
+                        e.preventDefault();
+                        document.getElementById('search-trigger-btn').click();
+                    } else if (e.key === 'Escape') {
+                        document.getElementById('start-menu').classList.add('hidden-menu');
+                        document.getElementById('global-search-modal').classList.add('hidden');
+                        document.getElementById('notification-center').classList.add('closed');
+                    }
+                });
+            }
+
+            setThemeAccent(accentName) {
+                document.body.className = `h-full w-full overflow-hidden text-slate-100 dark accent-${accentName}`;
+                store.settings.accent = accentName;
+                Storage.save(store);
+            }
+
+            resetData() {
+                localStorage.removeItem(Storage.KEY);
+                window.location.reload();
+            }
+        }
+
+        // Initialize NEXUS OS Engine on Load
+        let NexusOS;
+        window.addEventListener('DOMContentLoaded', () => {
+            NexusOS = new OSController();
+        });
+    </script>
+</body>
+</html>
